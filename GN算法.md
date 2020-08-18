@@ -32,7 +32,7 @@ class GN(object):
             t = 0.0
             for i in community :
                 for j in community :
-                    if  self.G.has_edge(i,j):
+                    if  self.firstgraph.has_edge(i,j):
                         t+=1.0
             e.append(t/float(2*m))
 
