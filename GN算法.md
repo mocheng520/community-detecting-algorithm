@@ -79,7 +79,5 @@ if __name__ == '__main__':
     # nx.write_gml(newgraph,'shuchu.gml')
     #
 
-
-
                 
 ```
