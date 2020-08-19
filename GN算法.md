@@ -1,5 +1,6 @@
 ```
 import networkx as nx
+import time
 
 class GN(object):
     def __init__(self,G):
@@ -46,19 +47,38 @@ class GN(object):
 
 if __name__ == '__main__':
 
-    G=nx.read_gml('football.gml')
+    G=nx.read_gml('football真.gml')
     a = GN(G)
+    start = time.time()
     while len(a.G.edges()) > 1:
+        print('已完成%d/%d'%(len(a.firstgraph.edges()) -len(a.G.edges())+1,len(a.firstgraph.edges())) )
         a.updata()
         a.calcQ()
 
-
     print('----------------------------------')
     print('最终模块度:',a.Q)
+    print('time:%d' %(time.time()-start))
     print('共划分为 %d 个社团' % (len(a.finapart)))
     print('分别为：')
     for i in a.finapart:
         print (i)
+
+    #可视化
+    # newgraph = nx.Graph()
+    # i = 0
+    # for community in a.finapart:
+    #     for node in community:
+    #         newgraph.add_node(node,community = '%d' %(i))
+    #     i+=1
+    #
+    # for edge in a.firstgraph.edges():
+    #     a = edge[0]
+    #     b = edge[1]
+    #     newgraph.add_edge(a,b)
+    #
+    # nx.write_gml(newgraph,'shuchu.gml')
+    #
+
 
 
                 
