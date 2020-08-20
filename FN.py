@@ -1,4 +1,4 @@
-```
+
 
 import networkx as nx
 import time
@@ -102,4 +102,4 @@ if __name__ =="__main__":
     for i in a.finapart:
         print(i)
 
-```
+
