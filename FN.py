@@ -14,9 +14,11 @@ class FN(object):
 
     def pre(self):
 
+           #初始化self.G
         for i in self.firstgraph.nodes():
             self.G.add_node(i)
 
+            #算初始模块度
         q = []
         for node in self.firstgraph.nodes():
             q.append(self.firstgraph.degree(node))
@@ -65,29 +67,23 @@ class FN(object):
             for component in nx.connected_components(self.G):
                 if i[0] in component and i[1] in component:break
 
-
                 if i[0] in component: community_a = component
                 if i[1] in component: community_b = component
 
-
+    
             if len(community_a) == 0 : continue
 
 
             q = self.calc_deltaQ(community_a, community_b)
-
+            #记录每一轮的最大ΔQ和对应的边
             if q > maxq:
                 maxq = q
                 maxedge = i
-
-
         self.Q += maxq
-
-
         if  maxedge[0] != -1:
-
             self.G.add_edge(maxedge[0], maxedge[1])
 
-
+        #如果本轮迭代的Q继续增大，则记录此时对应的社团情况
         if self.Q > self.finaQ:
 
             self.finaQ = self.Q
