@@ -3,82 +3,116 @@ import time
 
 class FN(object):
     def __init__(self,G):
-        self.firstgraph = G.copy()
         self.G = nx.Graph()
-        self.realG = G.copy()
+        self.firstgraph = G
+        self.dict = {}
         self.Q = 0
+        self.finaQ = 0
         self.part = []
-        self.finapart = []
+        self.m = len(G.edges())
 
 
+    def pre(self):
 
-    def updata(self):
+        for i in self.firstgraph.nodes():
+            self.G.add_node(i)
 
-        while len(self.firstgraph.edges())>0:
-
-            maxq = -999999999
-            maxedge = []
-            maxcompose = []
-
-            for i in self.firstgraph.edges():
-                Gclone = self.G.copy()
-                Gclone.add_edge(i[0],i[1])
-
-                q = self.calcQ(Gclone,[list(c) for c in list(nx.connected_components(Gclone))])
-
-                if q > maxq:
-                    maxedge = i
-                    maxq = q
-                    maxcompose = [list(c) for c in list(nx.connected_components(Gclone))]
-            print(len(self.G.edges()))
-            self.G.add_edge(maxedge[0],maxedge[1])
-            self.firstgraph.remove_edge(maxedge[0],maxedge[1])
-
-            if maxq >self.Q:
-                self.Q = maxq
-                self.part = maxcompose
+        q = []
+        for node in self.firstgraph.nodes():
+            q.append(self.firstgraph.degree(node))
+        sum = 0
+        for i in q:
+            sum += -1.0 * float(i**2)/float(4 * self.m **2)
+        self.Q = sum
 
 
 
 
+    def calc_deltaQ(self, community_i, community_j):
+        e = 0
+        ai = 0
+        aj = 0
 
-    def calcQ(self,G,comp):
-        m = len(self.firstgraph.edges())
-        a = []
-        e = []
 
-        for community in comp:
-            t = 0
-            for node in community:
+        for node_i in community_i:
+            for node_j in community_j:
+                if self.firstgraph.has_edge(node_i, node_j):
+                    e += 1
 
-                t += self.realG.degree(node)
-            a.append(t / float(2 * m))
-        for community in comp:
-            t = 0.0
-            for i in community:
-                for j in community:
-                    if self.realG.has_edge(i, j):
-                        t += 1.0
-            e.append(t / float(2 * m))
+        for node_i in community_i:
+            ai += self.firstgraph.degree(node_i)
 
-        q = 0.0
-        for ei, ai in zip(e, a):
-            q += (ei - ai ** 2)
+        for node_j in community_j:
+            aj += self.firstgraph.degree(node_j)
 
-        return  q
+        q = 2.0 * (float(e) / float(2 * self.m) - float(ai) * float(aj) / float(4 * self.m ** 2))
 
-if __name__ =="__main__":
-    G=nx.read_gml('football真.gml')
+
+        return q
+
+
+    def calc(self):
+
+        maxq = -999
+        maxedge = (-1,-1)
+        for i in self.firstgraph.edges():
+
+            community_a = []
+            community_b = []
+
+
+
+            for component in nx.connected_components(self.G):
+                if i[0] in component and i[1] in component:break
+
+
+                if i[0] in component: community_a = component
+                if i[1] in component: community_b = component
+
+
+            if len(community_a) == 0 : continue
+
+
+            q = self.calc_deltaQ(community_a, community_b)
+
+            if q > maxq:
+                maxq = q
+                maxedge = i
+
+
+        self.Q += maxq
+
+
+        if  maxedge[0] != -1:
+
+            self.G.add_edge(maxedge[0], maxedge[1])
+
+
+        if self.Q > self.finaQ:
+
+            self.finaQ = self.Q
+
+            self.part = list(nx.connected_components(self.G))
+
+
+if __name__== '__main__':
+
 
     start = time.time()
 
-    a= FN(G)
+    G = nx.read_gml('football真.gml')
 
-    a.updata()
-    print('------------')
+    a = FN(G)
+    a.pre()
+    m = a.m
+    while  m>0:
+        print(a.m - m,'/',a.m)
+        m-=1
+        a.calc()
+    print(a.finaQ)
+    print('耗时：',time.time()-start)
+    print('一共 %d个社团'%(len(a.part)))
 
-    print('模块度为',(a.Q))
-    print('time:%d'%(time.time()-start))
-    print('一共%d个社团' % (len(a.part)))
     for i in a.part:
         print(i)
+
